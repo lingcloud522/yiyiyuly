@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 命名空间，和Java类中的包的声明很相似 -->
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:aop="http://www.springframework.org/schema/aop" xmlns:mvc="http://www.springframework.org/schema/mvc"
+       xmlns:tx="http://www.springframework.org/schema/tx" xmlns:task="http://www.springframework.org/schema/task"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.2.xsd
+						http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.2.xsd
+						http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc-3.2.xsd
+						http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd
+						http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-3.0.xsd
+						http://www.springframework.org/schema/task http://www.springframework.org/schema/task/spring-task-3.1.xsd">
+
+    <!-- 开启注解处理器 -->
+    <context:annotation-config/>
+
+    <!-- 自动扫描包下的注解 -->
+    <context:component-scan base-package="com.huadongmedia"/>
+
+    <!-- 数据绑定,转换支持 -->
+    <!-- 自动注册DefaultAnnotationHandlerMapping与AnnotationMethodHandlerAdapter两个bean -->
+    <mvc:annotation-driven>
+        <mvc:message-converters>
+            <bean class="org.springframework.http.converter.json.MappingJackson2HttpMessageConverter"/>
+        </mvc:message-converters>
+    </mvc:annotation-driven>
+
+    <!-- 织入aspectj切面 -->
+    <aop:aspectj-autoproxy/>
+
+    <!--织入定时任务 -->
+    <task:annotation-driven/>
+
+    <!--引入属性文件 -->
+    <context:property-placeholder location="classpath:dbconfig.properties" />
+    <!--<bean
+            class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+        <property name="locations">
+            <list>
+                <value>classpath:admin.properties</value>
+                <value>classpath:redis.properties</value>
+            </list>
+        </property>
+    </bean>-->
+
+    <bean id="taskExecutor"
+          class="org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor">
+        <property name="corePoolSize" value="5"/>
+        <property name="maxPoolSize" value="100"/>
+        <property name="queueCapacity" value="25"/>
+    </bean>
+
+
+    <!--mybatis配置-->
+    <bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+        <property name="configLocation" value="classpath:mybatis-config.xml"/>
+        <property name="dataSource" ref="serviceDataSource"/>
+        <property name="mapperLocations" value="classpath:mybatis/*.xml"/>
+        <property name="plugins">
+            <array>
+                <!--配置PageHelper插件-->
+                <bean class="com.github.pagehelper.PageInterceptor">
+                    <property name="properties">
+                        <!-- 什么都不配，使用默认的配置 -->
+                        <value>
+                            reasonable=true
+                        </value>
+                    </property>
+                </bean>
+            </array>
+        </property>
+    </bean>
+    <!--配置数据源-->
+    <bean id="serviceDataSource" class="com.alibaba.druid.pool.DruidDataSource"
+          init-method="init" destroy-method="close">
+        <property name="driverClassName" value="${jdbc.driver}"/>
+        <property name="url" value="${jdbc.url}"/>
+        <property name="username" value="${jdbc.username}"/>
+        <property name="password" value="${jdbc.password}"/>
+        <property name="initialSize" value="${jdbc.initialSize}"/>
+        <property name="minIdle" value="${jdbc.minIdle}"/>
+        <property name="maxActive" value="${jdbc.maxActive}"/>
+        <property name="maxWait" value="60000"/>
+        <property name="timeBetweenEvictionRunsMillis" value="60000"/>
+        <property name="minEvictableIdleTimeMillis" value="300000"/>
+        <property name="validationQuery" value="SELECT 'x'"/>
+        <property name="testWhileIdle" value="true"/>
+        <property name="testOnBorrow" value="false"/>
+        <property name="testOnReturn" value="false"/>
+        <property name="poolPreparedStatements" value="false"/>
+    </bean>
+    <!-- mybatis的Mapper的扫描器 MapperScannerConfigure  会自动扫描
+     mapper包下的所有接口自动生成代理对象: 对象名字为Mapper接口类名(首字母小写)
+ -->
+    <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+        <property name="basePackage" value="com.huadongmedia.mapper"/>
+        <!-- 注意这里是SqlSessionFactoryBeanName -->
+        <property name="sqlSessionFactoryBeanName" value="sqlSessionFactory"/>
+    </bean>
+
+
+    <!--事物管理器-->
+    <tx:annotation-driven transaction-manager="serviceTxManager"/>
+
+    <bean id="serviceTxManager"
+          class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+        <property name="dataSource" ref="serviceDataSource"/>
+        <qualifier value="serviceTxManager"/>
+    </bean>
+
+    <!-- 异常处理 -->
+    <!--	<bean class="com.situation.platform.common.exception.ServerExceptionHandler" />-->
+
+    <bean class="org.springframework.scheduling.concurrent.ThreadPoolExecutorFactoryBean"/>
+
+
+<!--    &lt;!&ndash;swagger2映射&ndash;&gt;
+    <mvc:resources location="classpath:/META-INF/resources/" mapping="swagger-ui.html"/>
+    <mvc:resources location="classpath:/META-INF/resources/webjars/" mapping="/webjars/**"/>-->
+
+    <!-- 处理文件-->
+    <bean id="multipartResolver" class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
+        <property name="maxUploadSize" value="92428800"/>
+        <property name="maxInMemorySize" value="1024000"/>
+        <property name="defaultEncoding" value="utf-8"/>
+    </bean>
+
+
+    <!-- 只能支持解析可由Servlet API的RequestDispatcher转发的视图资源图，如：内部jsp或者servlet。 -->
+    <!-- 决定视图类型，如果添加了jstl支持（即有jstl.jar），那么默认就是解析为jstl视图 -->
+    <bean
+            class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+        <!-- 视图前缀 -->
+        <property name="prefix" value="/WEB-INF/views/"/>
+        <!-- 视图后缀 -->
+        <property name="suffix" value=".jsp"/>
+    </bean>
+
+  <!--  <mvc:interceptors>
+        <mvc:interceptor>
+            &lt;!&ndash; 拦截器拦截的URL格式 &ndash;&gt;
+            <mvc:mapping path="/**"/>
+            <mvc:exclude-mapping path="/account/login/**"/>
+            <mvc:exclude-mapping path="/swagger-ui.html"/>
+            <mvc:exclude-mapping path="/configuration/**"/>
+            <mvc:exclude-mapping path="/swagger-resources"/>
+            <mvc:exclude-mapping path="/v2/**"/>
+            <mvc:exclude-mapping path="/headLine/**"/>
+            <mvc:exclude-mapping path="/es/**"/>
+            <mvc:exclude-mapping path="/**/*.js"/>
+            <mvc:exclude-mapping path="/**/*.css"/>
+            <mvc:exclude-mapping path="/**/*.svg"/>
+            <mvc:exclude-mapping path="/**/*.ttf"/>
+            <mvc:exclude-mapping path="/**/*.woff"/>
+            <mvc:exclude-mapping path="/**/*.woff2"/>
+            <mvc:exclude-mapping path="/**/*.png"/>
+            <mvc:exclude-mapping path="/**/*.jpg"/>
+            <mvc:exclude-mapping path="/**/*.gif"/>
+            <bean class="com.huadongmedia.platform.server.auth.AuthControl"/>
+        </mvc:interceptor>
+    </mvc:interceptors>-->
+    
+	<!--<import resource="spring-redis.xml"/>-->
+
+</beans>
