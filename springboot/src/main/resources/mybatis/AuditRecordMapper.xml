@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.huadongmedia.mapper.AuditRecordMapper">
+<mapper namespace="com.lingcloud.mapper.AuditRecordMapper">
 
     <sql id="allColumns">
         id,
@@ -18,7 +18,7 @@
         article_channel as articleChannel
     </sql>
 
-    <select id="selectById" resultType="com.huadongmedia.entity.AuditRecord">
+    <select id="selectById" resultType="com.lingcloud.entity.AuditRecord">
         select
           <include refid="allColumns"/>
         FROM
@@ -27,7 +27,7 @@
           id = #{id}
     </select>
 
-    <select id="selectAtRandom" resultType="com.huadongmedia.entity.AuditRecord">
+    <select id="selectAtRandom" resultType="com.lingcloud.entity.AuditRecord">
         SELECT
           <include refid="allColumns"/>
         FROM
@@ -41,4 +41,7 @@
             <if test="request.trialTime != null and request.trialTime != ''">and date(trial_time)=date(#{request.trialTime})</if>
         </where>
     </select>
+    <update id="update">
+        update audit_record set trial_state = 'pass' where id = 939
+    </update>
 </mapper>

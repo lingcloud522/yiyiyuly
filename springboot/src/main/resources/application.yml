@@ -14,9 +14,9 @@ spring:
 
   #DATABASE 主数据源 默认
   datasource:
-    url: jdbc:mysql:///wu_test
-    username: 
-    password: 
+    url: jdbc:mysql://rm-bp18a3e9v6hjev0krio.mysql.rds.aliyuncs.com/content_platform_test
+    username: testdb
+    password: Su2h981!@#30Wish
     driver-class-name: com.mysql.jdbc.Driver
     initialSize: 5
     minIdle: 5
@@ -37,7 +37,7 @@ spring:
     timeout: 2000
 #配置mybatis
 mybatis:
-  typeAliasesPackage: com.huadongmedia.entity
+  typeAliasesPackage: com.lingcloud.entity
   mapperLocations: classpath:mybatis/*.xml
 
 #更多数据源
@@ -46,6 +46,6 @@ custom:
     names: ds1,ds2,ds3
     ds1:
       driverClassName: com.mysql.jdbc.Driver
-      url: jdbc:mysql:///wu_test
+      url: jdbc:mysql://rm-bp18a3e9v6hjev0krio.mysql.rds.aliyuncs.com/wu_test
       username: testdb
-      password: 
+      password: Su2h981!@#30Wish

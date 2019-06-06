@@ -11,7 +11,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
  */
 @SpringBootApplication
 @EnableScheduling
-@MapperScan(basePackages = "com.huadongmedia.mapper")
+@MapperScan(basePackages = "com.lingcloud.mapper")
 /*@Import({DynamicDataSourceRegister.class})*/
 public class BootApplication {
   public static void main(String[] args) {
