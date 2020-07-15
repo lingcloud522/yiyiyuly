@@ -21,9 +21,13 @@ public class ArithmeticUtil {
 
 
     public static void main(String[] args) {
-        List<Map<String,Object>> lists = new ArrayList<>();
-        while(true){
-            lists.add(new HashMap<String,Object>());
+
+        String str = "a\tb\tc\td";
+        String[] split = str.split("\t", 2);
+        for(String s : split){
+            System.out.println(s);
         }
+
+
     }
 }

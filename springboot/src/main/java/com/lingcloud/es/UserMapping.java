@@ -22,7 +22,7 @@ public class UserMapping {
               .field("enabled",false)
               .endObject()
               .startObject("properties")
-              .startObject("title")
+              .startObject("title.conf")
               .field("type","string")
               .endObject()
               .startObject("question")
